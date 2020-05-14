@@ -1,5 +1,6 @@
 package de.neebs.swagger;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,14 +11,12 @@ import java.util.Map;
 @Getter
 @Setter
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Swagger {
-    private String swagger;
-    private Map<String, String> info;
-    private String host;
-    private String basePath;
-    private List<String> consumes;
-    private List<String> produces;
+public class OpenApi {
+    private String openapi;
+    private Map<String, Object> info;
+    private List<Server> servers;
     private List<Tag> tags;
     private Map<String, Object> paths;
+    private Components components;
     private Map<String, Definition> definitions;
 }

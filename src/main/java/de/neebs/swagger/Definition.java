@@ -20,4 +20,6 @@ public class Definition {
     private List<String> required;
     @JsonProperty("enum")
     private List<String> enumeration;
+    private Discriminator discriminator;
+    private List<Object> allOf;
 }

@@ -1,5 +1,5 @@
 {
-  "basefile": "bep-product-catalog-management.json",
+  "basefile": "product-catalog.json",
   "enhancements" : [
     {
       "entity": "ProductSpecification",
