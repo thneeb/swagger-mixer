@@ -1,0 +1,10 @@
+{
+  "basefile": "product-catalog.json",
+  "enhancements" : [
+    {
+      "entity": "ProductSpecification",
+      "attribute": "@type",
+      "schemaLocation": "salcus-tariff.json"
+    }
+  ]
+}

@@ -1,0 +1,2836 @@
+{
+	"openapi": "3.0.1",
+	"info": {
+		"title": "Product Catalog",
+		"description": "The Product Catalog API Provides the TM Forum standardized solution for rapidly adding partners’ products to an existing Catalog. It brings the capability for Service Providers to directly feed partners systems with the technical description of the products they propose to them.<br/><br/>This service has been implemented according to TM Forum Open APIs (Apache 2.0) <b>TMF620 - Product Catalog API, Release v17.5.1, Mar 2018</b><br/> - see <a href=\"https://projects.tmforum.org/wiki/display/API/Open+API+Table\">https://projects.tmforum.org/wiki/display/API/Open+API+Table</a>.<br/><b>Please note</b>, that there may be some differences at validation and model level to the proposed standard api.",
+		"contact": {
+			"name": "MB2B Team",
+			"url": "https://gard.telekom.de/gardwiki/x/i6QVDg"
+		},
+		"license": {
+			"name": "Deutsche Telekom AG"
+		},
+		"version": "1.0.8"
+	},
+	"servers": [{
+			"url": "https://services-ta1.bep-ta1.telekom.de"
+		}
+	],
+	"paths": {
+		"/productCatalogManagement/v1/catalog": {
+			"get": {
+				"tags": ["catalog"],
+				"summary": "List or find 'Catalog' objects",
+				"operationId": "listCatalog",
+				"parameters": [{
+						"name": "X-Correlation-ID",
+						"in": "header",
+						"description": "Marks a full request chain, starting with the top level consumer (usually a business transaction coming from a front-end of backend-for-frontend). If a service sends out requests to other services, the X-Correlation-ID MUST be handed down unchanged. Using the X-Correlation-ID, a call can be traced from top level consumer over all service levels and instances invoked. We strongly recommend to generate a UUID, which has 36 characters. The value can be pre- or postfixed by an identifier of the top level consumer.",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}, {
+						"name": "X-Request-ID",
+						"in": "header",
+						"description": "Marks a single request/response. The X-Request-ID MUST be generated for each individual request by the consumer as an ID that is unique across all systems using the API Gateway. We strongly recommend to generate a UUID, which has 36 characters.",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}, {
+						"name": "Customer-Number",
+						"in": "header",
+						"description": "Customer number to be forwarded to BEP Adapter",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}, {
+						"name": "Test-Flag",
+						"in": "header",
+						"description": "<p>{int} - Testing flag with possible values:</p><ul><li>    0 - no test (default)</li><li>    1 - orders will be sent to OMS, but will be only validated by OMS without any processing.</li><li>    2 - internal BEP validation only, won't sent to OMS</li></ul>",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}, {
+						"name": "agreement.id",
+						"in": "query",
+						"description": "This is the frame contract number for BEP customer. Pattern: [A-Za-z0-9]{5,7}",
+						"required": true,
+						"schema": {
+							"pattern": "[A-Za-z0-9]{5,7}",
+							"type": "string"
+						}
+					}, {
+						"name": "productOrder.externalId",
+						"in": "query",
+						"description": "The order number to identify the frame contract partner. The length must be between 1 and 30",
+						"required": true,
+						"schema": {
+							"maxLength": 30,
+							"minLength": 1,
+							"type": "string"
+						}
+					}, {
+						"name": "channel.id",
+						"in": "query",
+						"description": "Sales partner id. Its length must be 5",
+						"required": true,
+						"schema": {
+							"maxLength": 5,
+							"minLength": 5,
+							"type": "string"
+						}
+					}, {
+						"name": "channel.name",
+						"in": "query",
+						"description": "Name of the sales partner. The length must be between 1 and 40",
+						"required": false,
+						"schema": {
+							"maxLength": 40,
+							"minLength": 1,
+							"type": "string"
+						}
+					}, {
+						"name": "catalog.type",
+						"in": "query",
+						"description": "Type of the requested catalog.  for 'getProducts': {TMD_UPG, TMD_NG}, for 'getTargetTariffs': {TW, VVL}",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}, {
+						"name": "filter.product.type",
+						"in": "query",
+						"description": "Filter key. Required if catalog.type is TMD_UPG or TMD_NG. Not needed and ignored otherwise. Only allowed value is 'tariff'.",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}, {
+						"name": "filter.product.id",
+						"in": "query",
+						"description": "Filter values. Required if catalog.type is TMD_UPG or TMD_NG. Not needed otherwise. Comma separated list of Tariff Ids.",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}, {
+						"name": "category.name",
+						"in": "query",
+						"description": "If present, then 'tariffOption'",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}, {
+						"name": "qualification.iccId.mi",
+						"in": "query",
+						"description": "Major Industry. Pattern: [0-9]{1}. Default value: \"8\". Used only if catalog.type is TW or VVL. Must not be present if one of the qualification.msisdn... parameters is present.",
+						"required": false,
+						"schema": {
+							"pattern": "[0-9]{1}",
+							"type": "string"
+						}
+					}, {
+						"name": "qualification.iccId.ii",
+						"in": "query",
+						"description": "Issuer Id. Pattern: [0-9]{5}. Default value: \"94902\". Used only if catalog.type is VVL or TW.  Must not be present if one of the qualification.msisdn... parameters is present.",
+						"required": false,
+						"schema": {
+							"pattern": "[0-9]{5}",
+							"type": "string"
+						}
+					}, {
+						"name": "qualification.iccId.iai",
+						"in": "query",
+						"description": "Individual Account ID. Its the prefix of the card number. Pattern: [0-9]{5}. Typical value: 00000. Used only if catalog.type is VVL or TW. In this case: Required if none of the \"qualification.msisdn...\" parameters are present; must not be present if one of the \"qualification.msisdn...\" parameters is present.",
+						"required": false,
+						"schema": {
+							"pattern": "[0-9]{5}",
+							"type": "string"
+						}
+					}, {
+						"name": "qualification.iccId.nr",
+						"in": "query",
+						"description": "Serial number within the mobile phone card number. Pattern: [0-9]{8}. Used only if catalog.type is VVL or TW. In this case: Required if none of the \"qualification.msisdn...\" parameters are present; must not be present if one of the \"qualification.msisdn...\" parameters is present.",
+						"required": false,
+						"schema": {
+							"pattern": "[0-9]{8}",
+							"type": "string"
+						}
+					}, {
+						"name": "qualification.iccId.cd",
+						"in": "query",
+						"description": "Check digit for an ICCID. Pattern: [0-9]{1}. Used only if catalog.type is VVL or TW. In this case: Required if none of the \"qualification.msisdn...\" parameters are present; must not be present if one of the \"qualification.msisdn...\" parameters is present.",
+						"required": false,
+						"schema": {
+							"pattern": "[0-9]{1}",
+							"type": "string"
+						}
+					}, {
+						"name": "qualification.msisdn.networkDestinationCode",
+						"in": "query",
+						"description": "Network destination code of the mobile phone number. Pattern: 01[0-9]{2,3}. Used only if catalog.type is VVL or TW. In this case: Required if none of the \"qualification.iccId...\" parameters are present; must not be present if one of the \"qualification.iccId...\" parameters is present.",
+						"required": false,
+						"schema": {
+							"pattern": "01[0-9]{2,3}",
+							"type": "string"
+						}
+					}, {
+						"name": "qualification.msisdn.subscriberNumber",
+						"in": "query",
+						"description": "Subscriber number of the mobile phone number. Pattern: [1-9][0-9]{6,7}. Used only if catalog.type is VVL or TW. In this case: Required if none of the \"qualification.iccId...\" parameters are present; must not be present if one of the \"qualification.iccId...\" parameters is present.",
+						"required": false,
+						"schema": {
+							"pattern": "[1-9][0-9]{6,7}",
+							"type": "string"
+						}
+					}, {
+						"name": "qualification.msisdn.countryCode",
+						"in": "query",
+						"description": "Country code of the mobile phone number (without leading \"00\", without \"+\"). Not needed otherwise. Pattern: [0-9]{0,3}. Example: \"49\" for Germany. Used only if catalog.type is VVL or TW. In this case: Must not be present if one of the \"qualification.iccId...\" parameters is present.",
+						"required": false,
+						"schema": {
+							"pattern": "[0-9]{0,3}",
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/Catalog"
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"405": {
+						"description": "Method Not allowed",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				},
+				"security": [{
+						"bearer-key": []
+					}
+				]
+			}
+		},
+		"/productCatalogManagement/v1/productOffering": {
+			"get": {
+				"tags": ["productOffering"],
+				"summary": "Lists product offerings",
+				"operationId": "listProductOffering",
+				"parameters": [{
+						"name": "X-Correlation-ID",
+						"in": "header",
+						"description": "Marks a full request chain, starting with the top level consumer (usually a business transaction coming from a front-end of backend-for-frontend). If a service sends out requests to other services, the X-Correlation-ID MUST be handed down unchanged. Using the X-Correlation-ID, a call can be traced from top level consumer over all service levels and instances invoked. We strongly recommend to generate a UUID, which has 36 characters. The value can be pre- or postfixed by an identifier of the top level consumer.",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}, {
+						"name": "X-Request-ID",
+						"in": "header",
+						"description": "Marks a single request/response. The X-Request-ID MUST be generated for each individual request by the consumer as an ID that is unique across all systems using the API Gateway. We strongly recommend to generate a UUID, which has 36 characters.",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}, {
+						"name": "Customer-Number",
+						"in": "header",
+						"description": "Customer number to be forwarded to BEP Adapter",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}, {
+						"name": "Test-Flag",
+						"in": "header",
+						"description": "<p>{int} - Testing flag with possible values:</p><ul><li>    0 - no test (default)</li><li>    1 - orders will be sent to OMS, but will be only validated by OMS without any processing.</li><li>    2 - internal BEP validation only, won't sent to OMS</li></ul>",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}, {
+						"name": "agreement.id",
+						"in": "query",
+						"description": "This is the frame contract number for BEP customer. Pattern: [A-Za-z0-9]{5,7}",
+						"required": true,
+						"schema": {
+							"pattern": "[A-Za-z0-9]{5,7}",
+							"type": "string"
+						}
+					}, {
+						"name": "productOrder.externalId",
+						"in": "query",
+						"description": "The order number to identify the frame contract partner. The length must be between 1 and 30",
+						"required": true,
+						"schema": {
+							"maxLength": 30,
+							"minLength": 1,
+							"type": "string"
+						}
+					}, {
+						"name": "channel.id",
+						"in": "query",
+						"description": "Sales partner id. Its length must be 5",
+						"required": true,
+						"schema": {
+							"maxLength": 5,
+							"minLength": 5,
+							"type": "string"
+						}
+					}, {
+						"name": "channel.name",
+						"in": "query",
+						"description": "Name of the sales partner. The length must be between 1 and 40",
+						"required": false,
+						"schema": {
+							"maxLength": 40,
+							"minLength": 1,
+							"type": "string"
+						}
+					}, {
+						"name": "catalog.type",
+						"in": "query",
+						"description": "Type of the requested catalog.  for 'getProducts': {TMD_UPG, TMD_NG}, for 'getTargetTariffs': {TW, VVL}",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}, {
+						"name": "filter.product.type",
+						"in": "query",
+						"description": "Filter key. Required if catalog.type is TMD_UPG or TMD_NG. Not needed and ignored otherwise. Only allowed value is 'tariff'.",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}, {
+						"name": "filter.product.id",
+						"in": "query",
+						"description": "Filter values. Required if catalog.type is TMD_UPG or TMD_NG. Not needed otherwise. Comma separated list of Tariff Ids.",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}, {
+						"name": "category.id",
+						"in": "query",
+						"description": "This filters the product offerings to given category id. If no category id is given, then no filtering will be applied.",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}, {
+						"name": "category.name",
+						"in": "query",
+						"description": "If present, then 'tariffOption'",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}, {
+						"name": "qualification.iccId.mi",
+						"in": "query",
+						"description": "Major Industry. Pattern: [0-9]{1}. Default value: \"8\". Used only if catalog.type is TW or VVL. Must not be present if one of the qualification.msisdn... parameters is present.",
+						"required": false,
+						"schema": {
+							"pattern": "[0-9]{1}",
+							"type": "string"
+						}
+					}, {
+						"name": "qualification.iccId.ii",
+						"in": "query",
+						"description": "Issuer Id. Pattern: [0-9]{5}. Default value: \"94902\". Used only if catalog.type is VVL or TW.  Must not be present if one of the qualification.msisdn... parameters is present.",
+						"required": false,
+						"schema": {
+							"pattern": "[0-9]{5}",
+							"type": "string"
+						}
+					}, {
+						"name": "qualification.iccId.iai",
+						"in": "query",
+						"description": "Individual Account ID. Its the prefix of the card number. Pattern: [0-9]{5}. Typical value: 00000. Used only if catalog.type is VVL or TW. In this case: Required if none of the \"qualification.msisdn...\" parameters are present; must not be present if one of the \"qualification.msisdn...\" parameters is present.",
+						"required": false,
+						"schema": {
+							"pattern": "[0-9]{5}",
+							"type": "string"
+						}
+					}, {
+						"name": "qualification.iccId.nr",
+						"in": "query",
+						"description": "Serial number within the mobile phone card number. Pattern: [0-9]{8}. Used only if catalog.type is VVL or TW. In this case: Required if none of the \"qualification.msisdn...\" parameters are present; must not be present if one of the \"qualification.msisdn...\" parameters is present.",
+						"required": false,
+						"schema": {
+							"pattern": "[0-9]{8}",
+							"type": "string"
+						}
+					}, {
+						"name": "qualification.iccId.cd",
+						"in": "query",
+						"description": "Check digit for an ICCID. Pattern: [0-9]{1}. Used only if catalog.type is VVL or TW. In this case: Required if none of the \"qualification.msisdn...\" parameters are present; must not be present if one of the \"qualification.msisdn...\" parameters is present.",
+						"required": false,
+						"schema": {
+							"pattern": "[0-9]{1}",
+							"type": "string"
+						}
+					}, {
+						"name": "qualification.msisdn.networkDestinationCode",
+						"in": "query",
+						"description": "Network destination code of the mobile phone number. Pattern: 01[0-9]{2,3}. Used only if catalog.type is VVL or TW. In this case: Required if none of the \"qualification.iccId...\" parameters are present; must not be present if one of the \"qualification.iccId...\" parameters is present.",
+						"required": false,
+						"schema": {
+							"pattern": "01[0-9]{2,3}",
+							"type": "string"
+						}
+					}, {
+						"name": "qualification.msisdn.subscriberNumber",
+						"in": "query",
+						"description": "Subscriber number of the mobile phone number. Pattern: [1-9][0-9]{6,7}. Used only if catalog.type is VVL or TW. In this case: Required if none of the \"qualification.iccId...\" parameters are present; must not be present if one of the \"qualification.iccId...\" parameters is present.",
+						"required": false,
+						"schema": {
+							"pattern": "[1-9][0-9]{6,7}",
+							"type": "string"
+						}
+					}, {
+						"name": "qualification.msisdn.countryCode",
+						"in": "query",
+						"description": "Country code of the mobile phone number (without leading \"00\", without \"+\"). Not needed otherwise. Pattern: [0-9]{0,3}. Example: \"49\" for Germany. Used only if catalog.type is VVL or TW. In this case: Must not be present if one of the \"qualification.iccId...\" parameters is present.",
+						"required": false,
+						"schema": {
+							"pattern": "[0-9]{0,3}",
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/ProductOffering"
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"405": {
+						"description": "Method Not allowed",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				},
+				"security": [{
+						"bearer-key": []
+					}
+				]
+			}
+		},
+		"/productCatalogManagement/v1/productOffering/{id}": {
+			"get": {
+				"tags": ["productOffering"],
+				"summary": "Retrieves details of a product offering by id.",
+				"operationId": "getProductOffering",
+				"parameters": [{
+						"name": "X-Correlation-ID",
+						"in": "header",
+						"description": "Marks a full request chain, starting with the top level consumer (usually a business transaction coming from a front-end of backend-for-frontend). If a service sends out requests to other services, the X-Correlation-ID MUST be handed down unchanged. Using the X-Correlation-ID, a call can be traced from top level consumer over all service levels and instances invoked. We strongly recommend to generate a UUID, which has 36 characters. The value can be pre- or postfixed by an identifier of the top level consumer.",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}, {
+						"name": "X-Request-ID",
+						"in": "header",
+						"description": "Marks a single request/response. The X-Request-ID MUST be generated for each individual request by the consumer as an ID that is unique across all systems using the API Gateway. We strongly recommend to generate a UUID, which has 36 characters.",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}, {
+						"name": "Customer-Number",
+						"in": "header",
+						"description": "Customer number to be forwarded to BEP Adapter",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}, {
+						"name": "Test-Flag",
+						"in": "header",
+						"description": "<p>{int} - Testing flag with possible values:</p><ul><li>    0 - no test (default)</li><li>    1 - orders will be sent to OMS, but will be only validated by OMS without any processing.</li><li>    2 - internal BEP validation only, won't sent to OMS</li></ul>",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}, {
+						"name": "id",
+						"in": "path",
+						"description": "Identifier of the searched object.",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}, {
+						"name": "agreement.id",
+						"in": "query",
+						"description": "This is the frame contract number for BEP customer. Pattern: [A-Za-z0-9]{5,7}",
+						"required": true,
+						"schema": {
+							"pattern": "[A-Za-z0-9]{5,7}",
+							"type": "string"
+						}
+					}, {
+						"name": "productOrder.externalId",
+						"in": "query",
+						"description": "The order number to identify the frame contract partner. The length must be between 1 and 30",
+						"required": true,
+						"schema": {
+							"maxLength": 30,
+							"minLength": 1,
+							"type": "string"
+						}
+					}, {
+						"name": "channel.id",
+						"in": "query",
+						"description": "Sales partner id. Its length must be 5",
+						"required": true,
+						"schema": {
+							"maxLength": 5,
+							"minLength": 5,
+							"type": "string"
+						}
+					}, {
+						"name": "channel.name",
+						"in": "query",
+						"description": "Name of the sales partner. The length must be between 1 and 40",
+						"required": false,
+						"schema": {
+							"maxLength": 40,
+							"minLength": 1,
+							"type": "string"
+						}
+					}, {
+						"name": "catalog.type",
+						"in": "query",
+						"description": "Type of the requested catalog.  for 'getProducts': {TMD_UPG, TMD_NG}, for 'getTargetTariffs': {TW, VVL}",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}, {
+						"name": "filter.product.type",
+						"in": "query",
+						"description": "Filter key. Required if catalog.type is TMD_UPG or TMD_NG. Not needed and ignored otherwise. Only allowed value is 'tariff'.",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}, {
+						"name": "filter.product.id",
+						"in": "query",
+						"description": "Filter values. Required if catalog.type is TMD_UPG or TMD_NG. Not needed otherwise. Comma separated list of Tariff Ids.",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}, {
+						"name": "category.id",
+						"in": "query",
+						"description": "This filters the product offerings to given category id. If no category id is given, then no filtering will be applied.",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}, {
+						"name": "category.name",
+						"in": "query",
+						"description": "If present, then 'tariffOption'",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}, {
+						"name": "qualification.iccId.mi",
+						"in": "query",
+						"description": "Major Industry. Pattern: [0-9]{1}. Default value: \"8\". Used only if catalog.type is TW or VVL. Must not be present if one of the qualification.msisdn... parameters is present.",
+						"required": false,
+						"schema": {
+							"pattern": "[0-9]{1}",
+							"type": "string"
+						}
+					}, {
+						"name": "qualification.iccId.ii",
+						"in": "query",
+						"description": "Issuer Id. Pattern: [0-9]{5}. Default value: \"94902\". Used only if catalog.type is VVL or TW.  Must not be present if one of the qualification.msisdn... parameters is present.",
+						"required": false,
+						"schema": {
+							"pattern": "[0-9]{5}",
+							"type": "string"
+						}
+					}, {
+						"name": "qualification.iccId.iai",
+						"in": "query",
+						"description": "Individual Account ID. Its the prefix of the card number. Pattern: [0-9]{5}. Typical value: 00000. Used only if catalog.type is VVL or TW. In this case: Required if none of the \"qualification.msisdn...\" parameters are present; must not be present if one of the \"qualification.msisdn...\" parameters is present.",
+						"required": false,
+						"schema": {
+							"pattern": "[0-9]{5}",
+							"type": "string"
+						}
+					}, {
+						"name": "qualification.iccId.nr",
+						"in": "query",
+						"description": "Serial number within the mobile phone card number. Pattern: [0-9]{8}. Used only if catalog.type is VVL or TW. In this case: Required if none of the \"qualification.msisdn...\" parameters are present; must not be present if one of the \"qualification.msisdn...\" parameters is present.",
+						"required": false,
+						"schema": {
+							"pattern": "[0-9]{8}",
+							"type": "string"
+						}
+					}, {
+						"name": "qualification.iccId.cd",
+						"in": "query",
+						"description": "Check digit for an ICCID. Pattern: [0-9]{1}. Used only if catalog.type is VVL or TW. In this case: Required if none of the \"qualification.msisdn...\" parameters are present; must not be present if one of the \"qualification.msisdn...\" parameters is present.",
+						"required": false,
+						"schema": {
+							"pattern": "[0-9]{1}",
+							"type": "string"
+						}
+					}, {
+						"name": "qualification.msisdn.networkDestinationCode",
+						"in": "query",
+						"description": "Network destination code of the mobile phone number. Pattern: 01[0-9]{2,3}. Used only if catalog.type is VVL or TW. In this case: Required if none of the \"qualification.iccId...\" parameters are present; must not be present if one of the \"qualification.iccId...\" parameters is present.",
+						"required": false,
+						"schema": {
+							"pattern": "01[0-9]{2,3}",
+							"type": "string"
+						}
+					}, {
+						"name": "qualification.msisdn.subscriberNumber",
+						"in": "query",
+						"description": "Subscriber number of the mobile phone number. Pattern: [1-9][0-9]{6,7}. Used only if catalog.type is VVL or TW. In this case: Required if none of the \"qualification.iccId...\" parameters are present; must not be present if one of the \"qualification.iccId...\" parameters is present.",
+						"required": false,
+						"schema": {
+							"pattern": "[1-9][0-9]{6,7}",
+							"type": "string"
+						}
+					}, {
+						"name": "qualification.msisdn.countryCode",
+						"in": "query",
+						"description": "Country code of the mobile phone number (without leading \"00\", without \"+\"). Not needed otherwise. Pattern: [0-9]{0,3}. Example: \"49\" for Germany. Used only if catalog.type is VVL or TW. In this case: Must not be present if one of the \"qualification.iccId...\" parameters is present.",
+						"required": false,
+						"schema": {
+							"pattern": "[0-9]{0,3}",
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ProductOffering"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"405": {
+						"description": "Method Not allowed",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				},
+				"security": [{
+						"bearer-key": []
+					}
+				]
+			}
+		},
+		"/productCatalogManagement/v1/category/{id}": {
+			"get": {
+				"tags": ["category"],
+				"summary": "Retrieves a 'Category' by Id",
+				"operationId": "getCategory",
+				"parameters": [{
+						"name": "X-Correlation-ID",
+						"in": "header",
+						"description": "Marks a full request chain, starting with the top level consumer (usually a business transaction coming from a front-end of backend-for-frontend). If a service sends out requests to other services, the X-Correlation-ID MUST be handed down unchanged. Using the X-Correlation-ID, a call can be traced from top level consumer over all service levels and instances invoked. We strongly recommend to generate a UUID, which has 36 characters. The value can be pre- or postfixed by an identifier of the top level consumer.",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}, {
+						"name": "X-Request-ID",
+						"in": "header",
+						"description": "Marks a single request/response. The X-Request-ID MUST be generated for each individual request by the consumer as an ID that is unique across all systems using the API Gateway. We strongly recommend to generate a UUID, which has 36 characters.",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}, {
+						"name": "Customer-Number",
+						"in": "header",
+						"description": "Customer number to be forwarded to BEP Adapter",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}, {
+						"name": "Test-Flag",
+						"in": "header",
+						"description": "<p>{int} - Testing flag with possible values:</p><ul><li>    0 - no test (default)</li><li>    1 - orders will be sent to OMS, but will be only validated by OMS without any processing.</li><li>    2 - internal BEP validation only, won't sent to OMS</li></ul>",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}, {
+						"name": "id",
+						"in": "path",
+						"description": "Identifier of the searched object.",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}, {
+						"name": "agreement.id",
+						"in": "query",
+						"description": "This is the frame contract number for BEP customer. Pattern: [A-Za-z0-9]{5,7}",
+						"required": true,
+						"schema": {
+							"pattern": "[A-Za-z0-9]{5,7}",
+							"type": "string"
+						}
+					}, {
+						"name": "productOrder.externalId",
+						"in": "query",
+						"description": "The order number to identify the frame contract partner. The length must be between 1 and 30",
+						"required": true,
+						"schema": {
+							"maxLength": 30,
+							"minLength": 1,
+							"type": "string"
+						}
+					}, {
+						"name": "channel.id",
+						"in": "query",
+						"description": "Sales partner id. Its length must be 5",
+						"required": true,
+						"schema": {
+							"maxLength": 5,
+							"minLength": 5,
+							"type": "string"
+						}
+					}, {
+						"name": "channel.name",
+						"in": "query",
+						"description": "Name of the sales partner. The length must be between 1 and 40",
+						"required": false,
+						"schema": {
+							"maxLength": 40,
+							"minLength": 1,
+							"type": "string"
+						}
+					}, {
+						"name": "catalog.type",
+						"in": "query",
+						"description": "Type of the requested catalog.  for 'getProducts': {TMD_UPG, TMD_NG}, for 'getTargetTariffs': {TW, VVL}",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}, {
+						"name": "filter.product.type",
+						"in": "query",
+						"description": "Filter key. Required if catalog.type is TMD_UPG or TMD_NG. Not needed and ignored otherwise. Only allowed value is 'tariff'.",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}, {
+						"name": "filter.product.id",
+						"in": "query",
+						"description": "Filter values. Required if catalog.type is TMD_UPG or TMD_NG. Not needed otherwise. Comma separated list of Tariff Ids.",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}, {
+						"name": "category.name",
+						"in": "query",
+						"description": "If present, then 'tariffOption'",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}, {
+						"name": "qualification.iccId.mi",
+						"in": "query",
+						"description": "Major Industry. Pattern: [0-9]{1}. Default value: \"8\". Used only if catalog.type is TW or VVL. Must not be present if one of the qualification.msisdn... parameters is present.",
+						"required": false,
+						"schema": {
+							"pattern": "[0-9]{1}",
+							"type": "string"
+						}
+					}, {
+						"name": "qualification.iccId.ii",
+						"in": "query",
+						"description": "Issuer Id. Pattern: [0-9]{5}. Default value: \"94902\". Used only if catalog.type is VVL or TW.  Must not be present if one of the qualification.msisdn... parameters is present.",
+						"required": false,
+						"schema": {
+							"pattern": "[0-9]{5}",
+							"type": "string"
+						}
+					}, {
+						"name": "qualification.iccId.iai",
+						"in": "query",
+						"description": "Individual Account ID. Its the prefix of the card number. Pattern: [0-9]{5}. Typical value: 00000. Used only if catalog.type is VVL or TW. In this case: Required if none of the \"qualification.msisdn...\" parameters are present; must not be present if one of the \"qualification.msisdn...\" parameters is present.",
+						"required": false,
+						"schema": {
+							"pattern": "[0-9]{5}",
+							"type": "string"
+						}
+					}, {
+						"name": "qualification.iccId.nr",
+						"in": "query",
+						"description": "Serial number within the mobile phone card number. Pattern: [0-9]{8}. Used only if catalog.type is VVL or TW. In this case: Required if none of the \"qualification.msisdn...\" parameters are present; must not be present if one of the \"qualification.msisdn...\" parameters is present.",
+						"required": false,
+						"schema": {
+							"pattern": "[0-9]{8}",
+							"type": "string"
+						}
+					}, {
+						"name": "qualification.iccId.cd",
+						"in": "query",
+						"description": "Check digit for an ICCID. Pattern: [0-9]{1}. Used only if catalog.type is VVL or TW. In this case: Required if none of the \"qualification.msisdn...\" parameters are present; must not be present if one of the \"qualification.msisdn...\" parameters is present.",
+						"required": false,
+						"schema": {
+							"pattern": "[0-9]{1}",
+							"type": "string"
+						}
+					}, {
+						"name": "qualification.msisdn.networkDestinationCode",
+						"in": "query",
+						"description": "Network destination code of the mobile phone number. Pattern: 01[0-9]{2,3}. Used only if catalog.type is VVL or TW. In this case: Required if none of the \"qualification.iccId...\" parameters are present; must not be present if one of the \"qualification.iccId...\" parameters is present.",
+						"required": false,
+						"schema": {
+							"pattern": "01[0-9]{2,3}",
+							"type": "string"
+						}
+					}, {
+						"name": "qualification.msisdn.subscriberNumber",
+						"in": "query",
+						"description": "Subscriber number of the mobile phone number. Pattern: [1-9][0-9]{6,7}. Used only if catalog.type is VVL or TW. In this case: Required if none of the \"qualification.iccId...\" parameters are present; must not be present if one of the \"qualification.iccId...\" parameters is present.",
+						"required": false,
+						"schema": {
+							"pattern": "[1-9][0-9]{6,7}",
+							"type": "string"
+						}
+					}, {
+						"name": "qualification.msisdn.countryCode",
+						"in": "query",
+						"description": "Country code of the mobile phone number (without leading \"00\", without \"+\"). Not needed otherwise. Pattern: [0-9]{0,3}. Example: \"49\" for Germany. Used only if catalog.type is VVL or TW. In this case: Must not be present if one of the \"qualification.iccId...\" parameters is present.",
+						"required": false,
+						"schema": {
+							"pattern": "[0-9]{0,3}",
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Category"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"405": {
+						"description": "Method Not allowed",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				},
+				"security": [{
+						"bearer-key": []
+					}
+				]
+			}
+		},
+		"/productCatalogManagement/v1/category": {
+			"get": {
+				"tags": ["category"],
+				"summary": "List or find 'Category' objects",
+				"operationId": "listCategories",
+				"parameters": [{
+						"name": "X-Correlation-ID",
+						"in": "header",
+						"description": "Marks a full request chain, starting with the top level consumer (usually a business transaction coming from a front-end of backend-for-frontend). If a service sends out requests to other services, the X-Correlation-ID MUST be handed down unchanged. Using the X-Correlation-ID, a call can be traced from top level consumer over all service levels and instances invoked. We strongly recommend to generate a UUID, which has 36 characters. The value can be pre- or postfixed by an identifier of the top level consumer.",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}, {
+						"name": "X-Request-ID",
+						"in": "header",
+						"description": "Marks a single request/response. The X-Request-ID MUST be generated for each individual request by the consumer as an ID that is unique across all systems using the API Gateway. We strongly recommend to generate a UUID, which has 36 characters.",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}, {
+						"name": "Customer-Number",
+						"in": "header",
+						"description": "Customer number to be forwarded to BEP Adapter",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}, {
+						"name": "Test-Flag",
+						"in": "header",
+						"description": "<p>{int} - Testing flag with possible values:</p><ul><li>    0 - no test (default)</li><li>    1 - orders will be sent to OMS, but will be only validated by OMS without any processing.</li><li>    2 - internal BEP validation only, won't sent to OMS</li></ul>",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}, {
+						"name": "agreement.id",
+						"in": "query",
+						"description": "This is the frame contract number for BEP customer. Pattern: [A-Za-z0-9]{5,7}",
+						"required": true,
+						"schema": {
+							"pattern": "[A-Za-z0-9]{5,7}",
+							"type": "string"
+						}
+					}, {
+						"name": "productOrder.externalId",
+						"in": "query",
+						"description": "The order number to identify the frame contract partner. The length must be between 1 and 30",
+						"required": true,
+						"schema": {
+							"maxLength": 30,
+							"minLength": 1,
+							"type": "string"
+						}
+					}, {
+						"name": "channel.id",
+						"in": "query",
+						"description": "Sales partner id. Its length must be 5",
+						"required": true,
+						"schema": {
+							"maxLength": 5,
+							"minLength": 5,
+							"type": "string"
+						}
+					}, {
+						"name": "channel.name",
+						"in": "query",
+						"description": "Name of the sales partner. The length must be between 1 and 40",
+						"required": false,
+						"schema": {
+							"maxLength": 40,
+							"minLength": 1,
+							"type": "string"
+						}
+					}, {
+						"name": "catalog.type",
+						"in": "query",
+						"description": "Type of the requested catalog.  for 'getProducts': {TMD_UPG, TMD_NG}, for 'getTargetTariffs': {TW, VVL}",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}, {
+						"name": "filter.product.type",
+						"in": "query",
+						"description": "Filter key. Required if catalog.type is TMD_UPG or TMD_NG. Not needed and ignored otherwise. Only allowed value is 'tariff'.",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}, {
+						"name": "filter.product.id",
+						"in": "query",
+						"description": "Filter values. Required if catalog.type is TMD_UPG or TMD_NG. Not needed otherwise. Comma separated list of Tariff Ids.",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}, {
+						"name": "category.name",
+						"in": "query",
+						"description": "If present, then 'tariffOption'",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}, {
+						"name": "qualification.iccId.mi",
+						"in": "query",
+						"description": "Major Industry. Pattern: [0-9]{1}. Default value: \"8\". Used only if catalog.type is TW or VVL. Must not be present if one of the qualification.msisdn... parameters is present.",
+						"required": false,
+						"schema": {
+							"pattern": "[0-9]{1}",
+							"type": "string"
+						}
+					}, {
+						"name": "qualification.iccId.ii",
+						"in": "query",
+						"description": "Issuer Id. Pattern: [0-9]{5}. Default value: \"94902\". Used only if catalog.type is VVL or TW.  Must not be present if one of the qualification.msisdn... parameters is present.",
+						"required": false,
+						"schema": {
+							"pattern": "[0-9]{5}",
+							"type": "string"
+						}
+					}, {
+						"name": "qualification.iccId.iai",
+						"in": "query",
+						"description": "Individual Account ID. Its the prefix of the card number. Pattern: [0-9]{5}. Typical value: 00000. Used only if catalog.type is VVL or TW. In this case: Required if none of the \"qualification.msisdn...\" parameters are present; must not be present if one of the \"qualification.msisdn...\" parameters is present.",
+						"required": false,
+						"schema": {
+							"pattern": "[0-9]{5}",
+							"type": "string"
+						}
+					}, {
+						"name": "qualification.iccId.nr",
+						"in": "query",
+						"description": "Serial number within the mobile phone card number. Pattern: [0-9]{8}. Used only if catalog.type is VVL or TW. In this case: Required if none of the \"qualification.msisdn...\" parameters are present; must not be present if one of the \"qualification.msisdn...\" parameters is present.",
+						"required": false,
+						"schema": {
+							"pattern": "[0-9]{8}",
+							"type": "string"
+						}
+					}, {
+						"name": "qualification.iccId.cd",
+						"in": "query",
+						"description": "Check digit for an ICCID. Pattern: [0-9]{1}. Used only if catalog.type is VVL or TW. In this case: Required if none of the \"qualification.msisdn...\" parameters are present; must not be present if one of the \"qualification.msisdn...\" parameters is present.",
+						"required": false,
+						"schema": {
+							"pattern": "[0-9]{1}",
+							"type": "string"
+						}
+					}, {
+						"name": "qualification.msisdn.networkDestinationCode",
+						"in": "query",
+						"description": "Network destination code of the mobile phone number. Pattern: 01[0-9]{2,3}. Used only if catalog.type is VVL or TW. In this case: Required if none of the \"qualification.iccId...\" parameters are present; must not be present if one of the \"qualification.iccId...\" parameters is present.",
+						"required": false,
+						"schema": {
+							"pattern": "01[0-9]{2,3}",
+							"type": "string"
+						}
+					}, {
+						"name": "qualification.msisdn.subscriberNumber",
+						"in": "query",
+						"description": "Subscriber number of the mobile phone number. Pattern: [1-9][0-9]{6,7}. Used only if catalog.type is VVL or TW. In this case: Required if none of the \"qualification.iccId...\" parameters are present; must not be present if one of the \"qualification.iccId...\" parameters is present.",
+						"required": false,
+						"schema": {
+							"pattern": "[1-9][0-9]{6,7}",
+							"type": "string"
+						}
+					}, {
+						"name": "qualification.msisdn.countryCode",
+						"in": "query",
+						"description": "Country code of the mobile phone number (without leading \"00\", without \"+\"). Not needed otherwise. Pattern: [0-9]{0,3}. Example: \"49\" for Germany. Used only if catalog.type is VVL or TW. In this case: Must not be present if one of the \"qualification.iccId...\" parameters is present.",
+						"required": false,
+						"schema": {
+							"pattern": "[0-9]{0,3}",
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/Category"
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"405": {
+						"description": "Method Not allowed",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				},
+				"security": [{
+						"bearer-key": []
+					}
+				]
+			}
+		}
+	},
+	"components": {
+		"schemas": {
+			"AgreementRef": {
+				"required": ["id"],
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"description": "Unique identifier of a related entity."
+					},
+					"href": {
+						"type": "string",
+						"description": "Reference of the related entity."
+					},
+					"name": {
+						"type": "string",
+						"description": "Name of the agreement"
+					},
+					"@baseType": {
+						"type": "string",
+						"description": "When sub-classing, this defines the super-class"
+					},
+					"@schemaLocation": {
+						"type": "string",
+						"description": "A URI to a JSON-Schema file that defines additional attributes and relationships"
+					},
+					"@type": {
+						"type": "string",
+						"description": "When sub-classing, this defines the sub-class entity name"
+					},
+					"@referredType": {
+						"type": "string",
+						"description": "The actual type of the target instance when needed for disambiguation."
+					}
+				},
+				"description": "Agreement reference. An agreement represents a contract or arrangement, either written or verbal and sometimes enforceable by law, such as a service level agreement or a customer price agreement. An agreement involves a number of other business entities, such as products, services, and resources and/or their specifications."
+			},
+			"Attachment": {
+				"type": "object",
+				"properties": {
+					"description": {
+						"type": "string",
+						"description": "A narrative text describing the content of the attachment"
+					},
+					"href": {
+						"type": "string",
+						"description": "Reference of the attachment"
+					},
+					"id": {
+						"type": "string",
+						"description": "Unique identifier of the attachment"
+					},
+					"type": {
+						"type": "string",
+						"description": "Attachment type such as video, picture"
+					},
+					"url": {
+						"type": "string",
+						"description": "Uniform Resource Locator, is a web page address (a subset of URI)"
+					},
+					"mimeType": {
+						"type": "string",
+						"description": "Attachment mime type such as extension file for video, picture and document"
+					},
+					"validFor": {
+						"$ref": "#/components/schemas/TimePeriod"
+					},
+					"@type": {
+						"type": "string",
+						"description": "the class type of the Attachment"
+					},
+					"@baseType": {
+						"type": "string",
+						"description": "The immediate base class type of the attachment"
+					},
+					"@schemaLocation": {
+						"type": "string",
+						"description": "A link to the schema describing this attachment entity"
+					}
+				},
+				"description": "Complements the description of an element (for instance a product) through video, pictures..."
+			},
+			"BundledPopRelationship": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"description": "Unique identifier of the associated product offering"
+					},
+					"href": {
+						"type": "string",
+						"description": "hyperlink reference of the associated product offering"
+					},
+					"name": {
+						"type": "string",
+						"description": "Name of  the associated product offering"
+					},
+					"@type": {
+						"type": "string",
+						"description": "(Class) type of the associated product offering"
+					}
+				},
+				"description": "this object represents a bundle relationship from a bundle product offering (parent) to a simple product offering (child). A simple product offering may participate in more than one bundle relationships."
+			},
+			"BundledProdOfferOption": {
+				"type": "object",
+				"properties": {
+					"numberRelOfferLowerLimit": {
+						"type": "integer",
+						"description": "lower limit for a product offering that can be procured as part of the related BundledProductOffering",
+						"format": "int32"
+					},
+					"numberRelOfferUpperLimit": {
+						"type": "integer",
+						"description": "upper limit for a product offering that can be procured as part of the related BundledProductOffering",
+						"format": "int32"
+					},
+					"numberRelOfferDefault": {
+						"type": "integer",
+						"description": "Default number of produc offereings that should be procured as part of the related BundledProductOffering",
+						"format": "int32"
+					}
+				},
+				"description": "A set of numbers that specifies the lower and upper limits for a ProductOffering that can be procured as part of the related BundledProductOffering. Values can range from 0 to unbounded"
+			},
+			"BundledProductOffering": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"description": "Unique identifier of the BundledProductOffering"
+					},
+					"href": {
+						"type": "string",
+						"description": "Unique reference of the BundledProductOffering"
+					},
+					"lifecycleStatus": {
+						"type": "string",
+						"description": "Used to indicate the current lifecycle status"
+					},
+					"name": {
+						"type": "string",
+						"description": "Name of the BundledProductOffering"
+					},
+					"bundledProductOffering": {
+						"$ref": "#/components/schemas/BundledProdOfferOption"
+					}
+				},
+				"description": "A type of ProductOffering that belongs to a grouping of ProductOfferings made available to the market. It inherits of all attributes of ProductOffering."
+			},
+			"Catalog": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"description": "Unique identifier of the Catalog"
+					},
+					"href": {
+						"type": "string",
+						"description": "Unique reference of the catalog"
+					},
+					"name": {
+						"type": "string",
+						"description": "Name of the catalog"
+					},
+					"description": {
+						"type": "string",
+						"description": "Description of this catalog"
+					},
+					"@type": {
+						"type": "string",
+						"description": "Indicates the (class) type of catalog. For entity catalogs, this will be 'EntityCatalog'."
+					},
+					"@schemaLocation": {
+						"type": "string",
+						"description": "This field provides a link to the schema describing this REST resource"
+					},
+					"@baseType": {
+						"type": "string",
+						"description": "Indicates<b> </b>the base (class) type of this REST resource"
+					},
+					"version": {
+						"type": "string",
+						"description": "Catalog version"
+					},
+					"validFor": {
+						"$ref": "#/components/schemas/TimePeriod"
+					},
+					"lastUpdate": {
+						"$ref": "#/components/schemas/OffsetDateTime"
+					},
+					"lifecycleStatus": {
+						"type": "string",
+						"description": "Used to indicate the current lifecycle status"
+					}
+				},
+				"description": "The root entity for entity catalog management. An entity catalog can be defined as a collection of entity catalog items and arranging them in a particular manner based on the need. In comparison to Product, Service and Resource catalogs, the entity catalog is intended for the purpose of providing any SID entity to consumers via a catalog, with its specification and policy providing governance over its content. Even Entity catalog may have an overlap with Product, Service or Resource catalog, it doesn't replace them. It is primarily intended to address those SID entities which may not be addressed by any of Product, Service or Resource catalog. An entity catalog comprises of a list of RootEntities made available through EntityCatalogItems. This API addresses only RootEntity extended items as EntitySpecification. An entity catalog typically includes name, description and time period that it is valid for.",
+				"discriminator": {
+					"propertyName": "@type"
+				}
+			},
+			"Category": {
+				"type": "object",
+				"properties": {
+					"subCategory": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Category"
+						}
+					},
+					"id": {
+						"type": "string",
+						"description": "Unique identifier of the category"
+					},
+					"href": {
+						"type": "string",
+						"description": "Reference of the catalog"
+					},
+					"lastUpdate": {
+						"$ref": "#/components/schemas/OffsetDateTime"
+					},
+					"version": {
+						"type": "string",
+						"description": "Category version"
+					},
+					"lifecycleStatus": {
+						"type": "string",
+						"description": "Used to indicate the current lifecycle status"
+					},
+					"validFor": {
+						"$ref": "#/components/schemas/TimePeriod"
+					},
+					"parentId": {
+						"type": "string",
+						"description": "Unique identifier of the parent category"
+					},
+					"isRoot": {
+						"type": "boolean",
+						"description": "If true, this Boolean indicates that the category is a root of categories"
+					},
+					"name": {
+						"type": "string",
+						"description": "Name of the category"
+					},
+					"description": {
+						"type": "string",
+						"description": "Description of the category"
+					},
+					"@type": {
+						"type": "string",
+						"description": "the class type of the Category"
+					},
+					"@baseType": {
+						"type": "string",
+						"description": "the base class type of the category"
+					},
+					"@schemaLocation": {
+						"type": "string",
+						"description": "link to the schema describing this category"
+					},
+					"subCategoryRef": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CategoryRef"
+						}
+					},
+					"productOfferingRef": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/ProductOfferingRef"
+						}
+					},
+					"productOffering": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/ProductOffering"
+						}
+					}
+				},
+				"description": "The category resource is used to group product offerings, service and resource candidates in logical containers. Categories can contain other categories and/or product offerings, resource or service candidates."
+			},
+			"CategoryRef": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"description": "Unique reference of the category"
+					},
+					"href": {
+						"type": "string",
+						"description": "Unique reference of the category"
+					},
+					"version": {
+						"type": "string",
+						"description": "Category version"
+					},
+					"name": {
+						"type": "string",
+						"description": "Name of the category"
+					},
+					"@referredType": {
+						"type": "string",
+						"description": "the class type of the referred Category"
+					}
+				},
+				"description": "Category reference. The category resource is used to group product offerings, service and resource candidates in logical containers. Categories can contain other categories and/or product offerings, resource or service candidates."
+			},
+			"ChannelRef": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"description": "Unique identifier of the channel"
+					},
+					"href": {
+						"type": "string",
+						"description": "Reference of the channel"
+					},
+					"name": {
+						"type": "string",
+						"description": "Name of the channel"
+					},
+					"@referredType": {
+						"type": "string",
+						"description": "(Class) type of the referred channel like DistributionChannel, SalesChannel and so on"
+					}
+				},
+				"description": "Channel reference. The channel defines the channel for selling product offerings."
+			},
+			"Chronology": {
+				"type": "object",
+				"properties": {
+					"calendarType": {
+						"type": "string"
+					},
+					"id": {
+						"type": "string"
+					}
+				}
+			},
+			"ConstraintRef": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"description": "reference id to the target constraint"
+					},
+					"href": {
+						"type": "string",
+						"description": "Hyperlink reference to the target constraint"
+					},
+					"version": {
+						"type": "string",
+						"description": "constraint version"
+					},
+					"name": {
+						"type": "string",
+						"description": "Name given to the constraint"
+					},
+					"@referredType": {
+						"type": "string",
+						"description": "The (class) type of the referred constraint"
+					}
+				},
+				"description": "Constraint reference. The Constraint resource represents a policy/rule applied to an entity or entity spec."
+			},
+			"Duration": {
+				"type": "object",
+				"properties": {
+					"seconds": {
+						"type": "integer",
+						"format": "int64"
+					},
+					"zero": {
+						"type": "boolean"
+					},
+					"units": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/TemporalUnit"
+						}
+					},
+					"negative": {
+						"type": "boolean"
+					},
+					"nano": {
+						"type": "integer",
+						"format": "int32"
+					}
+				}
+			},
+			"Instant": {
+				"type": "object",
+				"properties": {
+					"nano": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"epochSecond": {
+						"type": "integer",
+						"format": "int64"
+					}
+				}
+			},
+			"LocalDateTime": {
+				"type": "object",
+				"properties": {
+					"month": {
+						"type": "string",
+						"enum": ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"]
+					},
+					"dayOfYear": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"dayOfWeek": {
+						"type": "string",
+						"enum": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"]
+					},
+					"nano": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"year": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"monthValue": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"dayOfMonth": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"hour": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"minute": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"second": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"chronology": {
+						"$ref": "#/components/schemas/Chronology"
+					}
+				}
+			},
+			"LocalTime": {
+				"type": "object",
+				"properties": {
+					"hour": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"minute": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"second": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"nano": {
+						"type": "integer",
+						"format": "int32"
+					}
+				}
+			},
+			"MarketSegmentRef": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"description": "Unique identifier of the market segment"
+					},
+					"href": {
+						"type": "string",
+						"description": "Reference of the market segment"
+					},
+					"name": {
+						"type": "string",
+						"description": "Name of the market segment"
+					},
+					"@referredType": {
+						"type": "string",
+						"description": "(Class) type of the referred market segment"
+					}
+				},
+				"description": "provides references to the corresponding market segment as target of product offerings. A market segment is grouping of Parties, GeographicAreas, SalesChannels, and so forth."
+			},
+			"Money": {
+				"type": "object",
+				"properties": {
+					"value": {
+						"type": "number",
+						"description": "A positive floating point number",
+						"format": "float"
+					},
+					"unit": {
+						"type": "string",
+						"description": "Currency (ISO4217 norm uses 3 letters to define the currency)"
+					}
+				},
+				"description": "A base / value business entity used to represent money"
+			},
+			"OffsetDateTime": {
+				"type": "object",
+				"properties": {
+					"offset": {
+						"$ref": "#/components/schemas/ZoneOffset"
+					},
+					"month": {
+						"type": "string",
+						"enum": ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"]
+					},
+					"dayOfYear": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"dayOfWeek": {
+						"type": "string",
+						"enum": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"]
+					},
+					"nano": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"year": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"monthValue": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"dayOfMonth": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"hour": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"minute": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"second": {
+						"type": "integer",
+						"format": "int32"
+					}
+				},
+				"description": "the last update time of this POP"
+			},
+			"PlaceRef": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"description": "Unique identifier of the place"
+					},
+					"href": {
+						"type": "string",
+						"description": "Unique reference of the place"
+					},
+					"name": {
+						"type": "string",
+						"description": "A user-friendly name for the place, such as \"Paris Store\", \"London Store\", \"Main Home\""
+					},
+					"geoLocationUrl": {
+						"type": "string",
+						"description": "A url providing a map for localizing the place"
+					},
+					"address": {
+						"type": "string",
+						"description": "A string characterizing an address (for instance a formatted address or an identifier taken from an address database or an address API)."
+					},
+					"@referredType": {
+						"type": "string",
+						"description": "class type of the referred Place object"
+					},
+					"role": {
+						"type": "string",
+						"description": "Role of the place (for instance: 'home delivery', 'shop retrieval')"
+					}
+				},
+				"description": "Place reference. Place defines the places where the products are sold or delivered."
+			},
+			"PopRelationship": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"description": "Unique identifier of the associated product offering"
+					},
+					"href": {
+						"type": "string",
+						"description": "hyperlink reference of the associated product offering"
+					},
+					"name": {
+						"type": "string",
+						"description": "Name of  the associated product offering"
+					},
+					"@type": {
+						"type": "string",
+						"description": "(Class) type of the associated product offering"
+					}
+				},
+				"description": "product offering relationship"
+			},
+			"Price": {
+				"type": "object",
+				"properties": {
+					"taxIncludedAmount": {
+						"$ref": "#/components/schemas/Money"
+					},
+					"dutyFreeAmount": {
+						"$ref": "#/components/schemas/Money"
+					},
+					"taxRate": {
+						"type": "number",
+						"description": "Tax rate",
+						"format": "float"
+					},
+					"percentage": {
+						"type": "number",
+						"description": "Percentage to apply for ProdOfferPriceAlteration",
+						"format": "float"
+					}
+				},
+				"description": "Provides all amounts (tax included, duty free, tax rate), used currency and percentage to apply for Price Alteration."
+			},
+			"PriceAlteration": {
+				"type": "object",
+				"properties": {
+					"name": {
+						"type": "string",
+						"description": "A short descriptive name such as \"Monthly discount\""
+					},
+					"description": {
+						"type": "string",
+						"description": "A narrative that explains in detail the semantics of this order item price alteration"
+					},
+					"priceType": {
+						"type": "string",
+						"description": "A category that describes the price such as recurring, one time and usage."
+					},
+					"unitOfMeasure": {
+						"type": "string",
+						"description": "Could be minutes, GB..."
+					},
+					"recurringChargePeriod": {
+						"type": "string",
+						"description": "Could be month, week..."
+					},
+					"applicationDuration": {
+						"type": "integer",
+						"description": "Duration during which the alteration applies on the order item price (for instance 2 months free of charge for the recurring charge)",
+						"format": "int32"
+					},
+					"priority": {
+						"type": "integer",
+						"description": "Priority level for applying this alteration among all the defined alterations on the order item price",
+						"format": "int32"
+					},
+					"priceCondition": {
+						"type": "string",
+						"description": "Condition that triggers the price application"
+					},
+					"validFor": {
+						"$ref": "#/components/schemas/TimePeriod"
+					},
+					"price": {
+						"$ref": "#/components/schemas/Price"
+					}
+				},
+				"description": "Is an amount, usually of money, that modifies the price charged for an order item."
+			},
+			"PricingLogicAlgorithm": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"description": "unique id of the PLA"
+					},
+					"href": {
+						"type": "string",
+						"description": "hyperlink reference of this PLA"
+					},
+					"name": {
+						"type": "string",
+						"description": "Name given to the PLA"
+					},
+					"description": {
+						"type": "string",
+						"description": "Description of the PLA"
+					},
+					"validFor": {
+						"$ref": "#/components/schemas/TimePeriod"
+					},
+					"plaSpecId": {
+						"type": "string",
+						"description": "id of corresponding PLA specification"
+					},
+					"@type": {
+						"type": "string",
+						"description": "The class type of this PLA"
+					}
+				},
+				"description": "The PricingLogicAlgorithm entity represents an instantiation of an interface specification to external rating function (without a modeled bahavior in SID). Some of the parameters of the interface definiition may be already set (such as price per unit) and some may be gathered during the rating process from the event (such as call duration) or from ProductCharacteristicValues (such as assigned bandwidth)"
+			},
+			"ProdSpecCharValueUse": {
+				"type": "object",
+				"properties": {
+					"name": {
+						"type": "string",
+						"description": "Name of the associated productSpecCharacteristic"
+					},
+					"description": {
+						"type": "string",
+						"description": "A narrative that explains in detail what the productSpecCharacteristic is"
+					},
+					"valueType": {
+						"type": "string",
+						"description": "A kind of value that the characteristic can take on, such as numeric, text and so forth"
+					},
+					"minCardinality": {
+						"type": "integer",
+						"description": "The minimum number of instances a CharacteristicValue can take on. For example, zero to five phone numbers in a group calling plan, where zero is the value for the minCardinality.",
+						"format": "int32"
+					},
+					"maxCardinality": {
+						"type": "integer",
+						"description": "The maximum number of instances a CharacteristicValue can take on. For example, zero to five phone numbers in a group calling plan, where five is the value for the maxCardinality.",
+						"format": "int32"
+					},
+					"validFor": {
+						"$ref": "#/components/schemas/TimePeriod"
+					},
+					"productSpecCharacteristicValue": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/ProductSpecCharacteristicValue"
+						}
+					},
+					"productSpecification": {
+						"$ref": "#/components/schemas/ProductSpecificationRef"
+					}
+				},
+				"description": "A use of the ProdSpecCharacteristicValue by a ProductOffering to which additional properties (attributes) apply or override the properties of similar properties contained in ProdSpecCharacteristicValue. It should be noted that characteristics which their value(s) addressed by this object must exist in corresponding product specification. The available characteristic values for a ProductSpecCharacteristic in a Product specification can be modified at the ProductOffering level. For example, a characteristic 'Color' might have values White, Blue, Green, and Red. But, the list of values can be restricted to e.g. White and Blue in an associated product offering. It should be noted that the list of values in 'ProdSpecCharValueUse' is a strict subset of the list of values as defined in the corresponding product specification characteristics."
+			},
+			"ProductOffering": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"description": "Unique identifier of the productOffering"
+					},
+					"href": {
+						"type": "string",
+						"description": "Reference of the ProductOffering"
+					},
+					"name": {
+						"type": "string",
+						"description": "Name of the productOffering"
+					},
+					"description": {
+						"type": "string",
+						"description": "Description of the productOffering"
+					},
+					"isBundle": {
+						"type": "boolean",
+						"description": "isBundle determines whether a productOffering represents a single productOffering (false), or a bundle of productOfferings (true)."
+					},
+					"lastUpdate": {
+						"$ref": "#/components/schemas/OffsetDateTime"
+					},
+					"lifecycleStatus": {
+						"type": "string",
+						"description": "Used to indicate the current lifecycle status"
+					},
+					"validFor": {
+						"$ref": "#/components/schemas/TimePeriod"
+					},
+					"version": {
+						"type": "string",
+						"description": "ProductOffering version"
+					},
+					"@type": {
+						"type": "string",
+						"description": "Class type of the product offering"
+					},
+					"@baseType": {
+						"type": "string",
+						"description": "Immediate base (class) type of the product offering"
+					},
+					"@schemaLocation": {
+						"type": "string",
+						"description": "A link to the schema describing this product offering"
+					},
+					"isSellable": {
+						"type": "string",
+						"description": "A flag indicating if this product offer can be sold stand-alone for sale or not. If this flag is false it indicates that the offer can only be sold within a bundle."
+					},
+					"place": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/PlaceRef"
+						}
+					},
+					"serviceLevelAgreement": {
+						"$ref": "#/components/schemas/SLARef"
+					},
+					"productSpecification": {
+						"$ref": "#/components/schemas/ProductSpecificationRef"
+					},
+					"channel": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/ChannelRef"
+						}
+					},
+					"serviceCandidate": {
+						"$ref": "#/components/schemas/ServiceCandidateRef"
+					},
+					"attachment": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Attachment"
+						}
+					},
+					"category": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CategoryRef"
+						}
+					},
+					"resourceCandidate": {
+						"$ref": "#/components/schemas/ResourceCandidateRef"
+					},
+					"productOfferingTerm": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/ProductOfferingTerm"
+						}
+					},
+					"marketSegment": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/MarketSegmentRef"
+						}
+					},
+					"productOfferingPrice": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/ProductOfferingPrice"
+						}
+					},
+					"agreement": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/AgreementRef"
+						}
+					},
+					"bundledProductOffering": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/BundledProductOffering"
+						}
+					},
+					"prodSpecCharValueUse": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/ProdSpecCharValueUse"
+						}
+					}
+				},
+				"description": "Represents entities that are orderable from the provider of the catalog, this resource includes pricing information.",
+				"discriminator": {
+					"propertyName": "@type"
+				}
+			},
+			"ProductOfferingPrice": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"description": "unique id of this resource"
+					},
+					"href": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string",
+						"description": "Name of the productOfferingPrice"
+					},
+					"description": {
+						"type": "string",
+						"description": "Description of the productOfferingPrice"
+					},
+					"version": {
+						"type": "string",
+						"description": "ProductOffering version"
+					},
+					"validFor": {
+						"$ref": "#/components/schemas/TimePeriod"
+					},
+					"priceType": {
+						"type": "string",
+						"description": "A category that describes the price, such as recurring, discount, allowance, penalty, and so forth."
+					},
+					"unitOfMeasure": {
+						"$ref": "#/components/schemas/Money"
+					},
+					"recurringChargePeriodType": {
+						"type": "string",
+						"description": "The period to repeat the application of the price Could be month, week..."
+					},
+					"recurringChargePeriodLength": {
+						"type": "integer",
+						"description": "the period of the recurring charge:  1, 2, ... .It sets to zero if it is not applicable",
+						"format": "int32"
+					},
+					"@type": {
+						"type": "string",
+						"description": "The class type of this Product offering"
+					},
+					"@baseType": {
+						"type": "string",
+						"description": "the immediate base class type of this product offering"
+					},
+					"@schemaLocation": {
+						"type": "string",
+						"description": "hyperlink reference to the schema describing this resource"
+					},
+					"lastUpdate": {
+						"$ref": "#/components/schemas/OffsetDateTime"
+					},
+					"isBundle": {
+						"type": "boolean",
+						"description": "A flag indicating if this POP is composite (bundle) or not"
+					},
+					"lifecycleStatus": {
+						"type": "string",
+						"description": "the lifecycle status of this POP"
+					},
+					"price": {
+						"$ref": "#/components/schemas/Price"
+					},
+					"percentage": {
+						"type": "number",
+						"description": "Percentage to apply for ProdOfferPriceAlteration (Discount)",
+						"format": "float"
+					},
+					"bundledPopRelationship": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/BundledPopRelationship"
+						}
+					},
+					"popRelationship": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/PopRelationship"
+						}
+					},
+					"prodSpecCharValueUse": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/ProdSpecCharValueUse"
+						}
+					},
+					"productOfferingTerm": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/ProductOfferingTerm"
+						}
+					},
+					"place": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/PlaceRef"
+						}
+					},
+					"constraint": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/ConstraintRef"
+						}
+					},
+					"pricingLogicAlgorithm": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/PricingLogicAlgorithm"
+						}
+					},
+					"tax": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Tax"
+						}
+					},
+					"priceAlteration": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/PriceAlteration"
+						}
+					}
+				},
+				"description": "An amount, usually of money, that is asked for or allowed when a ProductOffering is bought, rented, or leased. The price is valid for a defined period of time and may not represent the actual price paid by a customer."
+			},
+			"ProductOfferingRef": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"description": "Unique identifier of the product offering"
+					},
+					"href": {
+						"type": "string",
+						"description": "Reference of the product offering"
+					},
+					"name": {
+						"type": "string",
+						"description": "Name of the product offering"
+					},
+					"@referredType": {
+						"type": "string",
+						"description": "the class type of the referred product offering"
+					}
+				},
+				"description": "ProductOffering reference. A product offering represents entities that are orderable from the provider of the catalog, this resource includes pricing information."
+			},
+			"ProductOfferingTerm": {
+				"type": "object",
+				"properties": {
+					"name": {
+						"type": "string",
+						"description": "Name of the productOfferingTerm"
+					},
+					"description": {
+						"type": "string",
+						"description": "Description of the productOfferingTerm"
+					},
+					"duration": {
+						"$ref": "#/components/schemas/Quantity"
+					},
+					"validFor": {
+						"$ref": "#/components/schemas/TimePeriod"
+					},
+					"@type": {
+						"type": "string",
+						"description": "The class type of ProductOfferingTerm"
+					},
+					"@schemaLocation": {
+						"type": "string",
+						"description": "A link to the schema describing this product offering term"
+					}
+				},
+				"description": "A condition under which a ProductOffering is made available to Customers. For instance, a productOffering can be offered with multiple commitment periods."
+			},
+			"ProductOrderRef": {
+				"required": ["externalId", "id"],
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"description": "Unique identifier of a related entity."
+					},
+					"href": {
+						"type": "string",
+						"description": "Reference of the related entity."
+					},
+					"name": {
+						"type": "string",
+						"description": "Name of the related entity."
+					},
+					"@baseType": {
+						"type": "string",
+						"description": "When sub-classing, this defines the super-class"
+					},
+					"@schemaLocation": {
+						"type": "string",
+						"description": "A URI to a JSON-Schema file that defines additional attributes and relationships"
+					},
+					"@type": {
+						"type": "string",
+						"description": "When sub-classing, this defines the sub-class entity name"
+					},
+					"@referredType": {
+						"type": "string",
+						"description": "The actual type of the target instance when needed for disambiguation."
+					},
+					"externalId": {
+						"type": "string",
+						"description": "Customer number."
+					}
+				},
+				"description": "ProductOrder (ProductOrder) .The product order which the recommendation is related with."
+			},
+			"ProductSpecCharacteristicValue": {
+				"type": "object",
+				"properties": {
+					"isDefault": {
+						"type": "boolean",
+						"description": "Indicates if the value is the default value for a characteristic"
+					},
+					"unitOfMeasure": {
+						"type": "string",
+						"description": "Could be minutes, GB..."
+					},
+					"validFor": {
+						"$ref": "#/components/schemas/TimePeriod"
+					},
+					"value": {
+						"type": "string",
+						"description": "A discrete value that the characteristic can take on. the value type is defined by 'valueType' characteristic"
+					},
+					"valueFrom": {
+						"type": "string",
+						"description": "The low range value that a characteristic can take on"
+					},
+					"valueTo": {
+						"type": "string",
+						"description": "The upper range value that a characteristic can take on"
+					},
+					"valueType": {
+						"type": "string",
+						"description": "A kind of value that the characteristic can take on, such as numeric, text, and so forth"
+					},
+					"rangeInterval": {
+						"type": "string",
+						"description": "An indicator that specifies the inclusion or exclusion of the valueFrom and valueTo attributes. If applicable, possible values are \"open\", \"closed\", \"closedBottom\" and \"closedTop\"."
+					},
+					"regex": {
+						"type": "string",
+						"description": "Regular expression to define constraint on the allowed value"
+					},
+					"@type": {
+						"type": "string",
+						"description": "The class type of the characteristic value"
+					},
+					"@schemaLocation": {
+						"type": "string",
+						"description": "Hyperlink reference to schema describing this object"
+					}
+				},
+				"description": "A number or text that can be assigned to a ProductSpecCharacteristic.",
+				"discriminator": {
+					"propertyName": "@type"
+				}
+			},
+			"ProductSpecCharacteristicValueDescription": {
+				"type": "object",
+				"allOf": [{
+						"$ref": "#/components/schemas/ProductSpecCharacteristicValue"
+					}, {
+						"type": "object",
+						"properties": {
+							"description": {
+								"type": "string",
+								"description": "Description of this value"
+							}
+						}
+					}
+				]
+			},
+			"ProductSpecificationRef": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"description": "Unique identifier of the product specification"
+					},
+					"href": {
+						"type": "string",
+						"description": "Reference of the product specification"
+					},
+					"version": {
+						"type": "string",
+						"description": "Version of the product specification"
+					},
+					"name": {
+						"type": "string",
+						"description": "Name of the product specification"
+					},
+					"@referredType": {
+						"type": "string",
+						"description": "class type of referred Product Specification"
+					}
+				},
+				"description": "Product specification reference: A ProductSpecification is a detailed description of a tangible or intangible object made available externally in the form of a ProductOffering to customers or other parties playing a party role."
+			},
+			"Quantity": {
+				"type": "object",
+				"properties": {
+					"amount": {
+						"type": "integer",
+						"description": "A quantity of something, typically the total of a thing or things in number, size, value, extent, or money.",
+						"format": "int64"
+					},
+					"units": {
+						"type": "string",
+						"description": "The unit of measure for the quantity, such as meters, cubic yards, kilograms [ISO 80000], and the currency referring to [ISO 4217]."
+					}
+				},
+				"description": "A base / value and unit  used to represent quantity"
+			},
+			"ResourceCandidateRef": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"description": "Unique identifier of the resource candidate"
+					},
+					"href": {
+						"type": "string",
+						"description": "Reference of the resource candidate"
+					},
+					"version": {
+						"type": "string",
+						"description": "Version of the resource candidate"
+					},
+					"name": {
+						"type": "string",
+						"description": "Name of the resource candidate"
+					},
+					"@referredType": {
+						"type": "string",
+						"description": "The Class type of referred Resource Candidate"
+					}
+				},
+				"description": "ResourceCandidate reference: A resource candidate is an entity that makes a ResourceSpecification available to a catalog."
+			},
+			"SLARef": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"description": "Unique identifier of service level agreement"
+					},
+					"href": {
+						"type": "string",
+						"description": "Reference of the service level agreement"
+					},
+					"name": {
+						"type": "string",
+						"description": "Name of the service level agreement"
+					},
+					"@referredType": {
+						"type": "string",
+						"description": "class type of referred Service Level Agreement"
+					}
+				},
+				"description": "ServiceLevelAgreement reference: A service level agreement (SLA) is a type of agreement that represents a formal negotiated agreement between two parties designed to create a common understanding about products, services, priorities, responsibilities, and so forth. The SLA is a set of appropriate procedures and targets formally or informally agreed between parties in order to achieve and maintain specified Quality of Service."
+			},
+			"ServiceCandidateRef": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"description": "Unique identifier of the service candidate"
+					},
+					"href": {
+						"type": "string",
+						"description": "Unique reference of the service candidate"
+					},
+					"version": {
+						"type": "string",
+						"description": "Version of the service candidate"
+					},
+					"name": {
+						"type": "string",
+						"description": "Name of the service candidate"
+					},
+					"@referredType": {
+						"type": "string",
+						"description": "The Class type of  referred Service Candidate"
+					}
+				},
+				"description": "ServiceCandidate reference. ServiceCandidate is an entity that makes a ServiceSpecification available to a catalog."
+			},
+			"Tax": {
+				"type": "object",
+				"properties": {
+					"taxAmount": {
+						"$ref": "#/components/schemas/Money"
+					},
+					"taxCategory": {
+						"$ref": "#/components/schemas/Money"
+					},
+					"taxRate": {
+						"type": "number",
+						"description": "Tax rate",
+						"format": "float"
+					}
+				},
+				"description": "An amount of money levied on the price of a Product by a legislative body."
+			},
+			"TelekomMobileCatalog": {
+				"type": "object",
+				"allOf": [{
+						"$ref": "#/components/schemas/Catalog"
+					}, {
+						"type": "object",
+						"properties": {
+							"agreement": {
+								"$ref": "#/components/schemas/AgreementRef"
+							},
+							"productOrder": {
+								"$ref": "#/components/schemas/ProductOrderRef"
+							},
+							"provider": {
+								"type": "string",
+								"description": "Extension of TMF620 standard. Contains catalog owner."
+							},
+							"category": {
+								"type": "array",
+								"description": "List of root categories contained in this catalog",
+								"items": {
+									"$ref": "#/components/schemas/Category"
+								}
+							}
+						}
+					}
+				]
+			},
+			"TelekomMobileProductOffering": {
+				"type": "object",
+				"description": "Extension of TMF-602-class ProductOffering.",
+				"allOf": [{
+						"$ref": "#/components/schemas/ProductOffering"
+					}, {
+						"type": "object",
+						"properties": {
+							"availability": {
+								"type": "string",
+								"description": "Information about the availability of the product"
+							}
+						}
+					}
+				]
+			},
+			"TemporalUnit": {
+				"type": "object",
+				"properties": {
+					"dateBased": {
+						"type": "boolean"
+					},
+					"timeBased": {
+						"type": "boolean"
+					},
+					"duration": {
+						"$ref": "#/components/schemas/Duration"
+					},
+					"durationEstimated": {
+						"type": "boolean"
+					}
+				}
+			},
+			"TimePeriod": {
+				"type": "object",
+				"properties": {
+					"startDateTime": {
+						"$ref": "#/components/schemas/OffsetDateTime"
+					},
+					"endDateTime": {
+						"$ref": "#/components/schemas/OffsetDateTime"
+					}
+				},
+				"description": "A base / value business entity used to represent a period of time between two timepoints."
+			},
+			"ZoneOffset": {
+				"type": "object",
+				"properties": {
+					"totalSeconds": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"id": {
+						"type": "string"
+					},
+					"rules": {
+						"$ref": "#/components/schemas/ZoneRules"
+					}
+				}
+			},
+			"ZoneOffsetTransition": {
+				"type": "object",
+				"properties": {
+					"offsetBefore": {
+						"$ref": "#/components/schemas/ZoneOffset"
+					},
+					"offsetAfter": {
+						"$ref": "#/components/schemas/ZoneOffset"
+					},
+					"gap": {
+						"type": "boolean"
+					},
+					"dateTimeAfter": {
+						"$ref": "#/components/schemas/LocalDateTime"
+					},
+					"duration": {
+						"$ref": "#/components/schemas/Duration"
+					},
+					"dateTimeBefore": {
+						"$ref": "#/components/schemas/LocalDateTime"
+					},
+					"instant": {
+						"$ref": "#/components/schemas/Instant"
+					},
+					"overlap": {
+						"type": "boolean"
+					}
+				}
+			},
+			"ZoneOffsetTransitionRule": {
+				"type": "object",
+				"properties": {
+					"month": {
+						"type": "string",
+						"enum": ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"]
+					},
+					"timeDefinition": {
+						"type": "string",
+						"enum": ["UTC", "WALL", "STANDARD"]
+					},
+					"standardOffset": {
+						"$ref": "#/components/schemas/ZoneOffset"
+					},
+					"offsetBefore": {
+						"$ref": "#/components/schemas/ZoneOffset"
+					},
+					"offsetAfter": {
+						"$ref": "#/components/schemas/ZoneOffset"
+					},
+					"dayOfWeek": {
+						"type": "string",
+						"enum": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"]
+					},
+					"dayOfMonthIndicator": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"localTime": {
+						"$ref": "#/components/schemas/LocalTime"
+					},
+					"midnightEndOfDay": {
+						"type": "boolean"
+					}
+				}
+			},
+			"ZoneRules": {
+				"type": "object",
+				"properties": {
+					"fixedOffset": {
+						"type": "boolean"
+					},
+					"transitions": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/ZoneOffsetTransition"
+						}
+					},
+					"transitionRules": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/ZoneOffsetTransitionRule"
+						}
+					}
+				}
+			},
+			"Error": {
+				"required": ["code", "message"],
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "A number coding the error type. This is given to caller so he can translate them if required."
+					},
+					"message": {
+						"type": "string",
+						"description": "A short localized string that describes the error."
+					},
+					"description": {
+						"type": "string",
+						"description": "Explanation of the reason for the error which can be shown to a client user."
+					},
+					"status": {
+						"type": "string",
+						"description": "HTTP Error code extension"
+					},
+					"infoURL": {
+						"type": "string",
+						"description": "(optional) A URL to online documentation that provides more information about the error."
+					},
+					"@type": {
+						"type": "string",
+						"description": "This defines the class entity name of the error."
+					}
+				}
+			}
+		},
+		"securitySchemes": {
+			"bearer-key": {
+				"type": "http",
+				"scheme": "bearer",
+				"bearerFormat": "JWT"
+			}
+		}
+	},
+	"x-api-identifier": "de.telekom.mb2b.productcatalog.1.0.8",
+	"x-api-lifecycleState": "DRAFT",
+	"x-api-category": "ENTERPRISE",
+	"x-api-domain": "geschaeftskunden",
+	"x-api-governanceArea": "tdeu",
+	"x-api-repository": "de.telekom.mb2b.productcatalog.1.0.8",
+	"x-api-application": "ProductCatalog",
+	"x-api-dataProtectionClass": "DE1"
+}
