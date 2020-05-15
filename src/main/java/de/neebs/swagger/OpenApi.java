@@ -18,5 +18,4 @@ public class OpenApi {
     private List<Tag> tags;
     private Map<String, Object> paths;
     private Components components;
-    private Map<String, Definition> definitions;
 }

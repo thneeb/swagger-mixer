@@ -21,5 +21,5 @@ public class Definition {
     @JsonProperty("enum")
     private List<String> enumeration;
     private Discriminator discriminator;
-    private List<Object> allOf;
+    private List<Map<String, Object>> allOf;
 }

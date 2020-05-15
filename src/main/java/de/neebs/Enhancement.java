@@ -9,4 +9,5 @@ public class Enhancement {
     private String entity;
     private String attribute;
     private String schemaLocation;
+    private String derivedEntity;
 }

@@ -1,8 +1,8 @@
 {
-  "basefile": "bep-product-catalog-management.json",
+  "basefile": "product-catalog-openapi.json",
   "enhancements" : [
     {
-      "entity": "ProductSpecification",
+      "entity": "ProductSpecification_Create",
       "attribute": "@type",
       "schemaLocation": "salcus-tariff.json"
     }

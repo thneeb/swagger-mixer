@@ -1,5 +1,6 @@
 package de.neebs;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -15,12 +16,15 @@ public class Application implements CommandLineRunner {
     @Autowired
     private SwaggerMixer swaggerMixer;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args).close();
     }
 
     @Override
     public void run(String... args) throws Exception {
-        swaggerMixer.run(args);
+        swaggerMixer.run(objectMapper, args);
     }
 }

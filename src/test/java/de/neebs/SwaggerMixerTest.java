@@ -16,24 +16,27 @@ public class SwaggerMixerTest {
     @Autowired
     private SwaggerMixer swaggerMixer;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     @Rule
     public OutputCaptureRule outputCapture = new OutputCaptureRule();
 
     @Test
     public void testWithoutInput() throws Exception {
-        swaggerMixer.run();
+        swaggerMixer.run(objectMapper);
         Assert.assertTrue(outputCapture.getOut().contains("You need to pass the compose file."));
     }
 
     @Test
     public void testSwagger2File() throws Exception {
-        swaggerMixer.run("../../testfiles/compose-swagger.json");
+        swaggerMixer.run(objectMapper, "src/test/resources/testfiles/compose-swagger.json");
         Assert.assertTrue(outputCapture.getOut().contains("Swagger files are not supported."));
     }
 
     @Test
     public void testOpenApiFile() throws Exception {
-        swaggerMixer.run("../../testfiles/compose.json");
+        swaggerMixer.run(objectMapper,"src/test/resources/testfiles/compose.json");
         Assert.assertTrue(outputCapture.getOut().contains("Hello World"));
     }
 }
